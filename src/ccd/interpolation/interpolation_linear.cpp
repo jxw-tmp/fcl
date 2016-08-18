@@ -2,7 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -69,9 +69,9 @@ InterpolationType InterpolationLinear::getType() const
   return interpolation_linear_type;
 }
 
-boost::shared_ptr<Interpolation> InterpolationLinear::create(FCL_REAL start_value, FCL_REAL end_value)
+std::shared_ptr<Interpolation> InterpolationLinear::create(FCL_REAL start_value, FCL_REAL end_value)
 {
-  return boost::shared_ptr<Interpolation>(new InterpolationLinear(start_value, end_value) );
+  return std::shared_ptr<Interpolation>(new InterpolationLinear(start_value, end_value) );
 }
 
 void InterpolationLinear::registerToFactory()

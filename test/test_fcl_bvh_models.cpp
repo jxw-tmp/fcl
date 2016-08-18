@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2015, Open Source Robotics Foundation
+ *  Copyright (c) 2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -34,13 +34,10 @@
 
 /** \author Jeongseok Lee */
 
-
-#define BOOST_TEST_MODULE "FCL_BVH_MODELS"
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include "fcl/config.h"
 #include "fcl/BVH/BVH_model.h"
-#include "fcl/math/transform.h"
 #include "fcl/shape/geometric_shapes.h"
 #include "test_fcl_utility.h"
 #include <iostream>
@@ -50,7 +47,9 @@ using namespace fcl;
 template<typename BV>
 void testBVHModelPointCloud()
 {
-  boost::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+  using S = typename BV::S;
+
+  std::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
 
   if (model->getNodeType() != BV_AABB
       && model->getNodeType() != BV_KDOP16
@@ -63,60 +62,62 @@ void testBVHModelPointCloud()
     return;
   }
 
-  Box box;
-  double a = box.side[0];
-  double b = box.side[1];
-  double c = box.side[2];
-  std::vector<Vec3f> points(8);
-  points[0].setValue(0.5 * a, -0.5 * b, 0.5 * c);
-  points[1].setValue(0.5 * a, 0.5 * b, 0.5 * c);
-  points[2].setValue(-0.5 * a, 0.5 * b, 0.5 * c);
-  points[3].setValue(-0.5 * a, -0.5 * b, 0.5 * c);
-  points[4].setValue(0.5 * a, -0.5 * b, -0.5 * c);
-  points[5].setValue(0.5 * a, 0.5 * b, -0.5 * c);
-  points[6].setValue(-0.5 * a, 0.5 * b, -0.5 * c);
-  points[7].setValue(-0.5 * a, -0.5 * b, -0.5 * c);
+  Box<S> box;
+  auto a = box.side[0];
+  auto b = box.side[1];
+  auto c = box.side[2];
+  std::vector<Vector3<S>> points(8);
+  points[0] << 0.5 * a, -0.5 * b, 0.5 * c;
+  points[1] << 0.5 * a, 0.5 * b, 0.5 * c;
+  points[2] << -0.5 * a, 0.5 * b, 0.5 * c;
+  points[3] << -0.5 * a, -0.5 * b, 0.5 * c;
+  points[4] << 0.5 * a, -0.5 * b, -0.5 * c;
+  points[5] << 0.5 * a, 0.5 * b, -0.5 * c;
+  points[6] << -0.5 * a, 0.5 * b, -0.5 * c;
+  points[7] << -0.5 * a, -0.5 * b, -0.5 * c;
 
   int result;
 
   result = model->beginModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   for (std::size_t i = 0; i < points.size(); ++i)
   {
     result = model->addVertex(points[i]);
-    BOOST_CHECK_EQUAL(result, BVH_OK);
+    EXPECT_EQ(result, BVH_OK);
   }
 
   result = model->endModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   model->computeLocalAABB();
 
-  BOOST_CHECK_EQUAL(model->num_vertices, 8);
-  BOOST_CHECK_EQUAL(model->num_tris, 0);
-  BOOST_CHECK_EQUAL(model->build_state, BVH_BUILD_STATE_PROCESSED);
+  EXPECT_EQ(model->num_vertices, 8);
+  EXPECT_EQ(model->num_tris, 0);
+  EXPECT_EQ(model->build_state, BVH_BUILD_STATE_PROCESSED);
 }
 
 template<typename BV>
 void testBVHModelTriangles()
 {
-  boost::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
-  Box box;
+  using S = typename BV::S;
 
-  double a = box.side[0];
-  double b = box.side[1];
-  double c = box.side[2];
-  std::vector<Vec3f> points(8);
+  std::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+  Box<S> box;
+
+  auto a = box.side[0];
+  auto b = box.side[1];
+  auto c = box.side[2];
+  std::vector<Vector3<S>> points(8);
   std::vector<Triangle> tri_indices(12);
-  points[0].setValue(0.5 * a, -0.5 * b, 0.5 * c);
-  points[1].setValue(0.5 * a, 0.5 * b, 0.5 * c);
-  points[2].setValue(-0.5 * a, 0.5 * b, 0.5 * c);
-  points[3].setValue(-0.5 * a, -0.5 * b, 0.5 * c);
-  points[4].setValue(0.5 * a, -0.5 * b, -0.5 * c);
-  points[5].setValue(0.5 * a, 0.5 * b, -0.5 * c);
-  points[6].setValue(-0.5 * a, 0.5 * b, -0.5 * c);
-  points[7].setValue(-0.5 * a, -0.5 * b, -0.5 * c);
+  points[0] << 0.5 * a, -0.5 * b, 0.5 * c;
+  points[1] << 0.5 * a, 0.5 * b, 0.5 * c;
+  points[2] << -0.5 * a, 0.5 * b, 0.5 * c;
+  points[3] << -0.5 * a, -0.5 * b, 0.5 * c;
+  points[4] << 0.5 * a, -0.5 * b, -0.5 * c;
+  points[5] << 0.5 * a, 0.5 * b, -0.5 * c;
+  points[6] << -0.5 * a, 0.5 * b, -0.5 * c;
+  points[7] << -0.5 * a, -0.5 * b, -0.5 * c;
 
   tri_indices[0].set(0, 4, 1);
   tri_indices[1].set(1, 4, 5);
@@ -134,43 +135,45 @@ void testBVHModelTriangles()
   int result;
 
   result = model->beginModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   for (std::size_t i = 0; i < tri_indices.size(); ++i)
   {
     result = model->addTriangle(points[tri_indices[i][0]], points[tri_indices[i][1]], points[tri_indices[i][2]]);
-    BOOST_CHECK_EQUAL(result, BVH_OK);
+    EXPECT_EQ(result, BVH_OK);
   }
 
   result = model->endModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   model->computeLocalAABB();
 
-  BOOST_CHECK_EQUAL(model->num_vertices, 12 * 3);
-  BOOST_CHECK_EQUAL(model->num_tris, 12);
-  BOOST_CHECK_EQUAL(model->build_state, BVH_BUILD_STATE_PROCESSED);
+  EXPECT_EQ(model->num_vertices, 12 * 3);
+  EXPECT_EQ(model->num_tris, 12);
+  EXPECT_EQ(model->build_state, BVH_BUILD_STATE_PROCESSED);
 }
 
 template<typename BV>
 void testBVHModelSubModel()
 {
-  boost::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
-  Box box;
+  using S = typename BV::S;
 
-  double a = box.side[0];
-  double b = box.side[1];
-  double c = box.side[2];
-  std::vector<Vec3f> points(8);
+  std::shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+  Box<S> box;
+
+  auto a = box.side[0];
+  auto b = box.side[1];
+  auto c = box.side[2];
+  std::vector<Vector3<S>> points(8);
   std::vector<Triangle> tri_indices(12);
-  points[0].setValue(0.5 * a, -0.5 * b, 0.5 * c);
-  points[1].setValue(0.5 * a, 0.5 * b, 0.5 * c);
-  points[2].setValue(-0.5 * a, 0.5 * b, 0.5 * c);
-  points[3].setValue(-0.5 * a, -0.5 * b, 0.5 * c);
-  points[4].setValue(0.5 * a, -0.5 * b, -0.5 * c);
-  points[5].setValue(0.5 * a, 0.5 * b, -0.5 * c);
-  points[6].setValue(-0.5 * a, 0.5 * b, -0.5 * c);
-  points[7].setValue(-0.5 * a, -0.5 * b, -0.5 * c);
+  points[0] << 0.5 * a, -0.5 * b, 0.5 * c;
+  points[1] << 0.5 * a, 0.5 * b, 0.5 * c;
+  points[2] << -0.5 * a, 0.5 * b, 0.5 * c;
+  points[3] << -0.5 * a, -0.5 * b, 0.5 * c;
+  points[4] << 0.5 * a, -0.5 * b, -0.5 * c;
+  points[5] << 0.5 * a, 0.5 * b, -0.5 * c;
+  points[6] << -0.5 * a, 0.5 * b, -0.5 * c;
+  points[7] << -0.5 * a, -0.5 * b, -0.5 * c;
 
   tri_indices[0].set(0, 4, 1);
   tri_indices[1].set(1, 4, 5);
@@ -188,19 +191,19 @@ void testBVHModelSubModel()
   int result;
 
   result = model->beginModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   result = model->addSubModel(points, tri_indices);
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   result = model->endModel();
-  BOOST_CHECK_EQUAL(result, BVH_OK);
+  EXPECT_EQ(result, BVH_OK);
 
   model->computeLocalAABB();
 
-  BOOST_CHECK_EQUAL(model->num_vertices, 8);
-  BOOST_CHECK_EQUAL(model->num_tris, 12);
-  BOOST_CHECK_EQUAL(model->build_state, BVH_BUILD_STATE_PROCESSED);
+  EXPECT_EQ(model->num_vertices, 8);
+  EXPECT_EQ(model->num_tris, 12);
+  EXPECT_EQ(model->build_state, BVH_BUILD_STATE_PROCESSED);
 }
 
 template<typename BV>
@@ -211,14 +214,30 @@ void testBVHModel()
   testBVHModelSubModel<BV>();
 }
 
-BOOST_AUTO_TEST_CASE(building_bvh_models)
+GTEST_TEST(FCL_BVH_MODELS, building_bvh_models)
 {
-  testBVHModel<AABB>();
-  testBVHModel<OBB>();
-  testBVHModel<RSS>();
-  testBVHModel<kIOS>();
-  testBVHModel<OBBRSS>();
-  testBVHModel<KDOP<16> >();
-  testBVHModel<KDOP<18> >();
-  testBVHModel<KDOP<24> >();
+//  testBVHModel<AABB<float>>();
+//  testBVHModel<OBB<float>>();
+//  testBVHModel<RSS<float>>();
+//  testBVHModel<kIOS<float>>();
+//  testBVHModel<OBBRSS<float>>();
+//  testBVHModel<KDOP<float, 16> >();
+//  testBVHModel<KDOP<float, 18> >();
+//  testBVHModel<KDOP<float, 24> >();
+
+  testBVHModel<AABB<double>>();
+  testBVHModel<OBB<double>>();
+  testBVHModel<RSS<double>>();
+  testBVHModel<kIOS<double>>();
+  testBVHModel<OBBRSS<double>>();
+  testBVHModel<KDOP<double, 16> >();
+  testBVHModel<KDOP<double, 18> >();
+  testBVHModel<KDOP<double, 24> >();
+}
+
+//==============================================================================
+int main(int argc, char* argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

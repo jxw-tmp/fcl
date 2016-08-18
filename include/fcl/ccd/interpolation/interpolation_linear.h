@@ -2,7 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@
 #include "fcl/data_types.h"
 #include "fcl/ccd/interpolation/interpolation.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace fcl 
 {
@@ -67,7 +67,7 @@ public:
   virtual FCL_REAL getVelocityBound(FCL_REAL time) const;
 
 public:
-  static boost::shared_ptr<Interpolation> create(FCL_REAL start_value, FCL_REAL end_value);
+  static std::shared_ptr<Interpolation> create(FCL_REAL start_value, FCL_REAL end_value);
 
   static void registerToFactory();
 };

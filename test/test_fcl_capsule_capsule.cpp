@@ -2,7 +2,7 @@
  *  Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -35,120 +35,157 @@
 
 /** \author Karsten Knese <Karsten.Knese@googlemail.com> */
 
-#define BOOST_TEST_MODULE "FCL_CAPSULE_CAPSULE"
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
 
+#include "fcl/math/constants.h"
 #include "fcl/collision.h"
 #include "fcl/shape/geometric_shapes.h"
-#include "fcl/narrowphase/narrowphase.h"
+#include "fcl/narrowphase/gjk_solver_indep.h"
+#include "fcl/narrowphase/gjk_solver_libccd.h"
 
-#include "math.h"
-
+#include <cmath>
 using namespace fcl;
 
-BOOST_AUTO_TEST_CASE(distance_capsulecapsule_origin)
+//==============================================================================
+template <typename S>
+void test_distance_capsulecapsule_origin()
 {
+  GJKSolver_indep<S> solver;
+  Capsule<S> s1(5, 10);
+  Capsule<S> s2(5, 10);
 
-  GJKSolver_indep solver;
-  Capsule s1(5, 10);
-  Capsule s2(5, 10);
+  Vector3<S> closest_p1, closest_p2;
 
-  Vec3f closest_p1, closest_p2;
-
-  Transform3f transform;
-  Transform3f transform2;
-  transform2 = Transform3f(Vec3f(20.1, 0,0));
+  Transform3<S> transform = Transform3<S>::Identity();
+  Transform3<S> transform2 = Transform3<S>::Identity();
+  transform2.translation() = Vector3<S>(20.1, 0,0);
 
   bool res;
-  FCL_REAL dist;
+  S dist;
 
-  res = solver.shapeDistance<Capsule, Capsule>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
-  std::cerr << "applied transformation of two caps: " << transform.getTranslation() << " & " << transform2.getTranslation() << std::endl;
+  res = solver.template shapeDistance<Capsule<S>, Capsule<S>>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
+  std::cerr << "applied transformation of two caps: " << transform.translation() << " & " << transform2.translation() << std::endl;
   std::cerr << "computed points in caps to caps" << closest_p1 << " & " << closest_p2 << "with dist: " << dist << std::endl;
 
-  BOOST_CHECK(fabs(dist - 10.1) < 0.001);
-  BOOST_CHECK(res);
-
+  EXPECT_TRUE(std::abs(dist - 10.1) < 0.001);
+  EXPECT_TRUE(res);
 }
 
-
-BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformXY)
+//==============================================================================
+template <typename S>
+void test_distance_capsulecapsule_transformXY()
 {
+  GJKSolver_indep<S> solver;
+  Capsule<S> s1(5, 10);
+  Capsule<S> s2(5, 10);
 
-  GJKSolver_indep solver;
-  Capsule s1(5, 10);
-  Capsule s2(5, 10);
+  Vector3<S> closest_p1, closest_p2;
 
-  Vec3f closest_p1, closest_p2;
-
-  Transform3f transform;
-  Transform3f transform2;
-  transform2 = Transform3f(Vec3f(20, 20,0));
+  Transform3<S> transform = Transform3<S>::Identity();
+  Transform3<S> transform2 = Transform3<S>::Identity();
+  transform2.translation() = Vector3<S>(20, 20,0);
 
   bool res;
-  FCL_REAL dist;
+  S dist;
 
-  res = solver.shapeDistance<Capsule, Capsule>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
-  std::cerr << "applied transformation of two caps: " << transform.getTranslation() << " & " << transform2.getTranslation() << std::endl;
+  res = solver.template shapeDistance<Capsule<S>, Capsule<S>>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
+  std::cerr << "applied transformation of two caps: " << transform.translation() << " & " << transform2.translation() << std::endl;
   std::cerr << "computed points in caps to caps" << closest_p1 << " & " << closest_p2 << "with dist: " << dist << std::endl;
 
-  float expected = sqrt(800) - 10;
-  BOOST_CHECK(fabs(expected-dist) < 0.01);
-  BOOST_CHECK(res);
-
+  S expected = std::sqrt(S(800)) - 10;
+  EXPECT_TRUE(std::abs(expected-dist) < 0.01);
+  EXPECT_TRUE(res);
 }
 
-BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformZ)
+//==============================================================================
+template <typename S>
+void test_distance_capsulecapsule_transformZ()
 {
+  GJKSolver_indep<S> solver;
+  Capsule<S> s1(5, 10);
+  Capsule<S> s2(5, 10);
 
-  GJKSolver_indep solver;
-  Capsule s1(5, 10);
-  Capsule s2(5, 10);
+  Vector3<S> closest_p1, closest_p2;
 
-  Vec3f closest_p1, closest_p2;
-
-  Transform3f transform;
-  Transform3f transform2;
-  transform2 = Transform3f(Vec3f(0,0,20.1));
+  Transform3<S> transform = Transform3<S>::Identity();
+  Transform3<S> transform2 = Transform3<S>::Identity();
+  transform2.translation() = Vector3<S>(0,0,20.1);
 
   bool res;
-  FCL_REAL dist;
+  S dist;
 
-  res = solver.shapeDistance<Capsule, Capsule>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
-  std::cerr << "applied transformation of two caps: " << transform.getTranslation() << " & " << transform2.getTranslation() << std::endl;
+  res = solver.template shapeDistance<Capsule<S>, Capsule<S>>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
+  std::cerr << "applied transformation of two caps: " << transform.translation() << " & " << transform2.translation() << std::endl;
   std::cerr << "computed points in caps to caps" << closest_p1 << " & " << closest_p2 << "with dist: " << dist << std::endl;
 
-  BOOST_CHECK(fabs(dist - 0.1) < 0.001);
-  BOOST_CHECK(res);
-
+  EXPECT_TRUE(std::abs(dist - 0.1) < 0.001);
+  EXPECT_TRUE(res);
 }
 
-
-BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformZ2)
+//==============================================================================
+template <typename S>
+void test_distance_capsulecapsule_transformZ2()
 {
+  const S Pi = constants<S>::pi();
 
-  GJKSolver_indep solver;
-  Capsule s1(5, 10);
-  Capsule s2(5, 10);
+  GJKSolver_indep<S> solver;
+  Capsule<S> s1(5, 10);
+  Capsule<S> s2(5, 10);
 
-  Vec3f closest_p1, closest_p2;
+  Vector3<S> closest_p1, closest_p2;
 
-  Transform3f transform;
-  Transform3f transform2;
-  transform2 = Transform3f(Vec3f(0,0,25.1));
-  Matrix3f rot2;
-  rot2.setEulerZYX(0,M_PI_2,0);
-  transform2.setRotation(rot2);
+  Transform3<S> transform = Transform3<S>::Identity();
+  Transform3<S> transform2 = Transform3<S>::Identity();
+  transform2.translation() = Vector3<S>(0,0,25.1);
+  Matrix3<S> rot2(
+        AngleAxis<S>(0, Vector3<S>::UnitX())
+        * AngleAxis<S>(Pi/2, Vector3<S>::UnitY())
+        * AngleAxis<S>(0, Vector3<S>::UnitZ()));
+  transform2.linear() = rot2;
 
   bool res;
-  FCL_REAL dist;
+  S dist;
 
-  res = solver.shapeDistance<Capsule, Capsule>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
-  std::cerr << "applied transformation of two caps: " << transform.getTranslation() << " & " << transform2.getTranslation() << std::endl;
-  std::cerr << "applied transformation of two caps: " << transform.getRotation() << " & " << transform2.getRotation() << std::endl;
+  res = solver.template shapeDistance<Capsule<S>, Capsule<S>>(s1, transform, s2, transform2, &dist, &closest_p1, &closest_p2);
+  std::cerr << "applied transformation of two caps: " << transform.translation() << " & " << transform2.translation() << std::endl;
+  std::cerr << "applied transformation of two caps: " << transform.linear() << " & " << transform2.linear() << std::endl;
   std::cerr << "computed points in caps to caps" << closest_p1 << " & " << closest_p2 << "with dist: " << dist << std::endl;
 
-  BOOST_CHECK(fabs(dist - 5.1) < 0.001);
-  BOOST_CHECK(res);
+  EXPECT_TRUE(std::abs(dist - 5.1) < 0.001);
+  EXPECT_TRUE(res);
+}
 
+//==============================================================================
+GTEST_TEST(FCL_CAPSULE_CAPSULE, distance_capsulecapsule_origin)
+{
+//  test_distance_capsulecapsule_origin<float>();
+  test_distance_capsulecapsule_origin<double>();
+}
+
+//==============================================================================
+GTEST_TEST(FCL_CAPSULE_CAPSULE, distance_capsulecapsule_transformXY)
+{
+//  test_distance_capsulecapsule_transformXY<float>();
+  test_distance_capsulecapsule_transformXY<double>();
+}
+
+//==============================================================================
+GTEST_TEST(FCL_CAPSULE_CAPSULE, distance_capsulecapsule_transformZ)
+{
+//  test_distance_capsulecapsule_transformZ<float>();
+  test_distance_capsulecapsule_transformZ<double>();
+}
+
+//==============================================================================
+GTEST_TEST(FCL_CAPSULE_CAPSULE, distance_capsulecapsule_transformZ2)
+{
+//  test_distance_capsulecapsule_transformZ2<float>();
+  test_distance_capsulecapsule_transformZ2<double>();
+}
+
+//==============================================================================
+int main(int argc, char* argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

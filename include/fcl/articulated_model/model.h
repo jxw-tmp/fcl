@@ -2,7 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -42,10 +42,11 @@
 #include "fcl/articulated_model/link.h"
 
 #include "fcl/data_types.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <map>
 #include <stdexcept>
+
 namespace fcl
 {
 
@@ -55,6 +56,7 @@ public:
   ModelParseError(const std::string& error_msg) : std::runtime_error(error_msg) {}
 };
 
+template <typename S>
 class Model
 {
 public:
@@ -64,9 +66,9 @@ public:
 
   const std::string& getName() const;
   
-  void addLink(const boost::shared_ptr<Link>& link);
+  void addLink(const std::shared_ptr<Link>& link);
 
-  void addJoint(const boost::shared_ptr<Joint>& joint);
+  void addJoint(const std::shared_ptr<Joint>& joint);
 
   void initRoot(const std::map<std::string, std::string>& link_parent_tree);
 
@@ -78,22 +80,158 @@ public:
 
   std::size_t getNumJoints() const;
   
-  boost::shared_ptr<Link> getRoot() const;
-  boost::shared_ptr<Link> getLink(const std::string& name) const;
-  boost::shared_ptr<Joint> getJoint(const std::string& name) const;
+  std::shared_ptr<Link> getRoot() const;
+  std::shared_ptr<Link> getLink(const std::string& name) const;
+  std::shared_ptr<Joint> getJoint(const std::string& name) const;
 
-  std::vector<boost::shared_ptr<Link> > getLinks() const;
-  std::vector<boost::shared_ptr<Joint> > getJoints() const;
+  std::vector<std::shared_ptr<Link> > getLinks() const;
+  std::vector<std::shared_ptr<Joint> > getJoints() const;
 protected:
-  boost::shared_ptr<Link> root_link_;
-  std::map<std::string, boost::shared_ptr<Link> > links_;
-  std::map<std::string, boost::shared_ptr<Joint> > joints_;
+  std::shared_ptr<Link> root_link_;
+  std::map<std::string, std::shared_ptr<Link> > links_;
+  std::map<std::string, std::shared_ptr<Joint> > joints_;
 
   std::string name_;
   
 };
 
+//==============================================================================
+template <typename S>
+std::shared_ptr<Link> Model::getRoot() const
+{
+  return root_link_;
 }
 
-#endif
+//==============================================================================
+template <typename S>
+std::shared_ptr<Link> Model::getLink(const std::string& name) const
+{
+  std::shared_ptr<Link> ptr;
+  std::map<std::string, std::shared_ptr<Link> >::const_iterator it = links_.find(name);
+  if(it == links_.end())
+    ptr.reset();
+  else
+    ptr = it->second;
+  return ptr;
+}
 
+//==============================================================================
+template <typename S>
+std::shared_ptr<Joint> Model::getJoint(const std::string& name) const
+{
+  std::shared_ptr<Joint> ptr;
+  std::map<std::string, std::shared_ptr<Joint> >::const_iterator it = joints_.find(name);
+  if(it == joints_.end())
+    ptr.reset();
+  else
+    ptr = it->second;
+  return ptr;
+}
+
+//==============================================================================
+template <typename S>
+const std::string& Model::getName() const
+{
+  return name_;
+}
+
+//==============================================================================
+template <typename S>
+std::vector<std::shared_ptr<Link> > Model::getLinks() const
+{
+  std::vector<std::shared_ptr<Link> > links;
+  for(std::map<std::string, std::shared_ptr<Link> >::const_iterator it = links_.begin(); it != links_.end(); ++it)
+  {
+    links.push_back(it->second);
+  }
+
+  return links;
+}
+
+//==============================================================================
+template <typename S>
+std::size_t Model::getNumLinks() const
+{
+  return links_.size();
+}
+
+//==============================================================================
+template <typename S>
+std::size_t Model::getNumJoints() const
+{
+  return joints_.size();
+}
+
+//==============================================================================
+template <typename S>
+std::size_t Model::getNumDofs() const
+{
+  std::size_t dof = 0;
+  for(std::map<std::string, std::shared_ptr<Joint> >::const_iterator it = joints_.begin(); it != joints_.end(); ++it)
+  {
+    dof += it->second->getNumDofs();
+  }
+
+  return dof;
+}
+
+//==============================================================================
+template <typename S>
+void Model::addLink(const std::shared_ptr<Link>& link)
+{
+  links_[link->getName()] = link;
+}
+
+//==============================================================================
+template <typename S>
+void Model::addJoint(const std::shared_ptr<Joint>& joint)
+{
+  joints_[joint->getName()] = joint;
+}
+
+//==============================================================================
+template <typename S>
+void Model::initRoot(const std::map<std::string, std::string>& link_parent_tree)
+{
+  root_link_.reset();
+
+  /// find the links that have no parent in the tree
+  for(std::map<std::string, std::shared_ptr<Link> >::const_iterator it = links_.begin(); it != links_.end(); ++it)
+  {
+    std::map<std::string, std::string>::const_iterator parent = link_parent_tree.find(it->first);
+    if(parent == link_parent_tree.end())
+    {
+      if(!root_link_)
+      {
+        root_link_ = getLink(it->first);
+      }
+      else
+      {
+        throw ModelParseError("Two root links found: [" + root_link_->getName() + "] and [" + it->first + "]");
+      }
+    }
+  }
+
+  if(!root_link_)
+    throw ModelParseError("No root link found.");
+}
+
+//==============================================================================
+template <typename S>
+void Model::initTree(std::map<std::string, std::string>& link_parent_tree)
+{
+  for(std::map<std::string, std::shared_ptr<Joint> >::iterator it = joints_.begin(); it != joints_.end(); ++it)
+  {
+    std::string parent_link_name = it->second->getParentLink()->getName();
+    std::string child_link_name = it->second->getChildLink()->getName();
+
+    it->second->getParentLink()->addChildJoint(it->second);
+    it->second->getChildLink()->setParentJoint(it->second);
+
+    link_parent_tree[child_link_name] = parent_link_name;
+  }
+}
+
+} // namespace fcl
+
+#endif

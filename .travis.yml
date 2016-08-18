@@ -1,3 +1,8 @@
+sudo: required
+dist: trusty
+cache:
+  apt: true
+
 language: cpp
 
 os:
@@ -9,8 +14,8 @@ compiler:
   - clang
 
 env:
-  - BUILD_TYPE=Debug
-  - BUILD_TYPE=Release
+  - BUILD_TYPE=Debug   COVERALLS=ON
+  - BUILD_TYPE=Release COVERALLS=OFF
 
 matrix:
   exclude:
@@ -28,10 +33,11 @@ script:
   - cd build 
 
   # Configure
-  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DFCL_COVERALLS=$COVERALLS ..
 
   # Build
-  - make -j4
+  - make -j2
+  - if [ $COVERALLS = ON ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then make coveralls; fi
 
   # Run unit tests
   - make test

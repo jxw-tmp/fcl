@@ -2,7 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -41,14 +41,16 @@
 #include "fcl/data_types.h"
 #include "fcl/collision_object.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 namespace fcl
 {
 
+template <typename S>
 class Joint;
 
+template <typename S>
 class Link
 {
 public:
@@ -58,11 +60,11 @@ public:
   
   void setName(const std::string& name);
   
-  void addChildJoint(const boost::shared_ptr<Joint>& joint);
+  void addChildJoint(const std::shared_ptr<Joint>& joint);
   
-  void setParentJoint(const boost::shared_ptr<Joint>& joint);
+  void setParentJoint(const std::shared_ptr<Joint>& joint);
   
-  void addObject(const boost::shared_ptr<CollisionObject>& object);
+  void addObject(const std::shared_ptr<CollisionObject<S>>& object);
   
   std::size_t getNumChildJoints() const;
   
@@ -71,13 +73,73 @@ public:
 protected:
   std::string name_;
 
-  std::vector<boost::shared_ptr<CollisionObject> > objects_;
+  std::vector<std::shared_ptr<CollisionObject<S>> > objects_;
 
-  std::vector<boost::shared_ptr<Joint> > children_joints_;
+  std::vector<std::shared_ptr<Joint> > children_joints_;
 
-  boost::shared_ptr<Joint> parent_joint_;
+  std::shared_ptr<Joint> parent_joint_;
 };
 
+//============================================================================//
+//                                                                            //
+//                              Implementations                               //
+//                                                                            //
+//============================================================================//
+
+//==============================================================================
+template <typename S>
+Link<S>::Link(const std::string& name) : name_(name)
+{}
+
+//==============================================================================
+template <typename S>
+const std::string& Link<S>::getName() const
+{
+  return name_;
 }
+
+//==============================================================================
+template <typename S>
+void Link<S>::setName(const std::string& name)
+{
+  name_ = name;
+}
+
+//==============================================================================
+template <typename S>
+void Link<S>::addChildJoint(const std::shared_ptr<Joint>& joint)
+{
+  children_joints_.push_back(joint);
+}
+
+//==============================================================================
+template <typename S>
+void Link<S>::setParentJoint(const std::shared_ptr<Joint>& joint)
+{
+  parent_joint_ = joint;
+}
+
+//==============================================================================
+template <typename S>
+void Link<S>::addObject(const std::shared_ptr<CollisionObject<S>>& object)
+{
+  objects_.push_back(object);
+}
+
+//==============================================================================
+template <typename S>
+std::size_t Link<S>::getNumChildJoints() const
+{
+  return children_joints_.size();
+}
+
+//==============================================================================
+template <typename S>
+std::size_t Link<S>::getNumObjects() const
+{
+  return objects_.size();
+}
+
+} // namespace fcl
 
 #endif

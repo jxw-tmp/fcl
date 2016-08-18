@@ -2,7 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2011-2014, Willow Garage, Inc.
- *  Copyright (c) 2014-2015, Open Source Robotics Foundation
+ *  Copyright (c) 2014-2016, Open Source Robotics Foundation
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,8 @@
 
 #include <map>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
+#include <memory>
+#include <functional>
 
 namespace fcl 
 {
@@ -52,12 +52,12 @@ namespace fcl
 class InterpolationFactory
 {	
 public:
-  typedef boost::function<boost::shared_ptr<Interpolation>(FCL_REAL, FCL_REAL)> CreateFunction;
+  typedef std::function<std::shared_ptr<Interpolation>(FCL_REAL, FCL_REAL)> CreateFunction;
 
 public:
   void registerClass(const InterpolationType type, const CreateFunction create_function);
 
-  boost::shared_ptr<Interpolation> create(const InterpolationType type, FCL_REAL start_value, FCL_REAL end_value);
+  std::shared_ptr<Interpolation> create(const InterpolationType type, FCL_REAL start_value, FCL_REAL end_value);
 
 public:
   static InterpolationFactory& instance();

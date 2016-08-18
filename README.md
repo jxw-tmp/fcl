@@ -1,4 +1,8 @@
-## FCL -- The Flexible Collision Library [![Build Status](https://travis-ci.org/flexible-collision-library/fcl.svg)](https://travis-ci.org/flexible-collision-library/fcl)
+## FCL -- The Flexible Collision Library 
+
+Linux / OS X [![Build Status](https://travis-ci.org/flexible-collision-library/fcl.svg?branch=master)](https://travis-ci.org/flexible-collision-library/fcl)
+Windows [![Build status](https://ci.appveyor.com/api/projects/status/rrmxadnj1empitqq/branch/master?svg=true)](https://ci.appveyor.com/project/mamoll/fcl)
+Coverage [![Coverage Status](https://coveralls.io/repos/github/flexible-collision-library/fcl/badge.svg?branch=master)](https://coveralls.io/github/flexible-collision-library/fcl?branch=master)
 
 FCL is a library for performing three types of proximity queries on a pair of geometric models composed of triangles. 
  - Collision detection: detecting whether the two models overlap, and optionally, all of the triangles that overlap.
@@ -8,23 +12,28 @@ FCL is a library for performing three types of proximity queries on a pair of ge
  - Contact information: for collision detection and continuous collision detection, the contact information (including contact normals and contact points) can be returned optionally.
 
 FCL has the following features
- - C++ interface, heavily use the boost
+ - C++ interface
  - Compilable for either linux or win32 (both makefiles and Microsoft Visual projects can be generated using cmake)
  - No special topological constraints or adjacency information required for input models – all that is necessary is a list of the model's triangles
  - Supported different object shapes:
-  + sphere
   + box
+  + sphere
+  + ellipsoid
+  + capsule
   + cone
   + cylinder
+  + convex
+  + half-space
+  + plane
   + mesh
   + octree (optional, octrees are represented using the octomap library http://octomap.github.com)
 
 
 ## Installation
 
-Before compiling FCL, please make sure boost and libccd (for collision checking between convex objects and is available here https://github.com/danfis/libccd) are installed. For libccd, make sure to compile from github version instead of the zip file from the webpage, because one bug fixing is not included in the zipped version.
+Before compiling FCL, please make sure Eigen and libccd (for collision checking between convex objects and is available here https://github.com/danfis/libccd) are installed. For libccd, make sure to compile from github version instead of the zip file from the webpage, because one bug fixing is not included in the zipped version.
 
-Some optional libraries need to be installed for some optional capability of FCL. For octree collision, please install the octomap library from http://octomap.github.com. For global penetration depth, please install FLANN from https://github.com/mariusmuja/flann. For global penetration depth test, please install tinyxml.
+Some optional libraries need to be installed for some optional capability of FCL. For octree collision, please install the octomap library from http://octomap.github.com.
 
 CMakeLists.txt is used to generate makefiles in Linux or Visual studio projects in windows. In command line, run
 ``` cmake
